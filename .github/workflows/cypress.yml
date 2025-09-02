@@ -17,18 +17,18 @@ jobs:
       - name: Run Cypress tests
         run: npx cypress run || true # prevents job failure so email always runs
 
-      - name: Send result to Teams channel via Gmail
+      - name: Send result to Teams channel via SendGrid
         if: always()
         uses: dawidd6/action-send-mail@v3
         with:
-          server_address: smtp.gmail.com
+          server_address: smtp.sendgrid.net
           server_port: 587
           secure: false
-          username: ${{ secrets.EMAIL_USERNAME }}     
-          password: ${{ secrets.EMAIL_PASSWORD }}    
+          username: "apikey"                        
+          password: ${{ secrets.SENDGRID_API_KEY }} 
           subject: "Cypress Pipeline - ${{ job.status }}"
-          to: "e578a964.bounteous.com@amer.teams.ms"
-          from: "GitHub Actions <${{ secrets.EMAIL_USERNAME }}>"
+          to: "e578a964.bounteous.com@amer.teams.ms"   
+          from: "kishorekumar.gunasekar@bounteous.com"
           body: |
             Repository: ${{ github.repository }}
             Workflow: ${{ github.workflow }}
