@@ -28,17 +28,18 @@ jobs:
           password: ${{ secrets.SENDGRID_API_KEY }}
           subject: "Cypress Pipeline - ${{ job.status }}"
           from: "GitHub Actions <kishorekumar.gunasekar@bounteous.com>"
-          to: "kishorekumargunasekar@gmail.com" # change to Teams email or group email if needed
-          content_type: text/html
-          body: |
-            <h2 style="color:#0366d6;">Cypress Pipeline - ${{ job.status }}</h2>
+          to: "kishorekumargunasekar@gmail.com" # replace with Teams channel email
+          html_body: |
+            <h2 style="color:#0366d6;">🚀 Cypress Pipeline - ${{ job.status }}</h2>
             <p><b>Repository:</b> ${{ github.repository }}</p>
             <p><b>Workflow:</b> ${{ github.workflow }}</p>
             <p><b>Run Number:</b> ${{ github.run_number }}</p>
-            <p><b>Status:</b> 
+            <p><b>Status:</b>
               <span style="color:${{ job.status == 'success' && 'green' || 'red' }};">
                 ${{ job.status }}
               </span>
             </p>
             <p>
-              🔗 <a href="https://github.co
+              🔗 <a href="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}">
+              View Logs</a>
+            </p>
