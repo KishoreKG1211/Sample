@@ -26,9 +26,9 @@ jobs:
           secure: false
           username: "apikey"                        
           password: ${{ secrets.SENDGRID_API_KEY }} 
-          subject: "Cypress Pipeline - ${{ job.status }}"
-          to: "e578a964.bounteous.com@amer.teams.ms"   
-          from: "GitHub Actions kishorekumar.gunasekar@bounteous.com"
+          subject: "Cypress Pipeline - ${{ job.status }}"   
+          from: "GitHub Actions <kishorekumar.gunasekar@bounteous.com>"
+          to: "kishorekumargunasekar@gmail.com"
           body: |
             Repository: ${{ github.repository }}
             Workflow: ${{ github.workflow }}
