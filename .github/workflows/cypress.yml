@@ -22,13 +22,13 @@ jobs:
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: smtp.office365.com
-          server_port: 587
+          server_port: 465
           secure: true
-          username: ${{ secrets.EMAIL_USERNAME }}   # your Outlook email (e.g. kishore@yourorg.com)
-          password: ${{ secrets.EMAIL_PASSWORD }}   # your Outlook password
+          username: "vignesh.listertechnologies@gmail.com"   # your Outlook email (e.g. kishore@yourorg.com)
+          password: "nvns simt juzt ospb"   # your Outlook password
           subject: "Cypress Pipeline - ${{ job.status }}"
           to: "e578a964.bounteous.com@amer.teams.ms"
-          from: "GitHub Actions <${{ secrets.EMAIL_USERNAME }}>"
+          from: "GitHub Actions vignesh.listertechnologies@gmail.com"
           body: |
             Repository: ${{ github.repository }}
             Workflow: ${{ github.workflow }}
