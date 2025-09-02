@@ -1,9 +1,8 @@
 name: Cypress Tests
 
-
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
 
 jobs:
@@ -16,19 +15,19 @@ jobs:
         run: npm ci
 
       - name: Run Cypress tests
-        run: npx cypress run || true   # prevents job failure so email always runs
+        run: npx cypress run || true # prevents job failure so email always runs
 
-      - name: Send result to Teams channel
+      - name: Send result to Teams channel via Outlook
         if: always()
         uses: dawidd6/action-send-mail@v3
         with:
-          server_address: smtp.gmail.com
+          server_address: smtp.office365.com
           server_port: 587
           secure: true
-          username: ${{ secrets.EMAIL_USERNAME }}
-          password: ${{ secrets.EMAIL_PASSWORD }}
+          username: ${{ secrets.EMAIL_USERNAME }}   # your Outlook email (e.g. kishore@yourorg.com)
+          password: ${{ secrets.EMAIL_PASSWORD }}   # your Outlook password
           subject: "Cypress Pipeline - ${{ job.status }}"
-          to: "Demo Channel - Business as Usual <e578a964.bounteous.com@amer.teams.ms>"
+          to: "e578a964.bounteous.com@amer.teams.ms"
           from: "GitHub Actions <${{ secrets.EMAIL_USERNAME }}>"
           body: |
             Repository: ${{ github.repository }}
