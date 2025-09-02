@@ -15,31 +15,26 @@ jobs:
         run: npm ci
 
       - name: Run Cypress tests
-        run: npx cypress run || true # prevents job failure so email always runs
+        run: npx cypress run || true # don't fail pipeline, always send mail
 
-      - name: Send result via SendGrid (HTML email)
+      - name: Send result to Teams via Company Email
         if: always()
         uses: dawidd6/action-send-mail@v3
         with:
-          server_address: smtp.sendgrid.net
+          server_address: smtp.office365.com   # or smtp.gmail.com
           server_port: 587
-          secure: false
-          username: "apikey"
-          password: ${{ secrets.SENDGRID_API_KEY }}
+          secure: true
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
           subject: "Cypress Pipeline - ${{ job.status }}"
-          from: "GitHub Actions <kishorekumar.gunasekar@bounteous.com>"
-          to: "kishorekumargunasekar@gmail.com" # replace with Teams channel email
+          from: ${{ secrets.EMAIL_USERNAME }}
+          to: "e578a964.bounteous.com@amer.teams.ms"   # Teams channel email
           html_body: |
-            <h2 style="color:#0366d6;">🚀 Cypress Pipeline - ${{ job.status }}</h2>
+            <h2>🚀 Cypress Pipeline - ${{ job.status }}</h2>
             <p><b>Repository:</b> ${{ github.repository }}</p>
             <p><b>Workflow:</b> ${{ github.workflow }}</p>
             <p><b>Run Number:</b> ${{ github.run_number }}</p>
-            <p><b>Status:</b>
-              <span style="color:${{ job.status == 'success' && 'green' || 'red' }};">
-                ${{ job.status }}
-              </span>
-            </p>
-            <p>
-              🔗 <a href="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}">
+            <p><b>Status:</b> ${{ job.status }}</p>
+            <p>🔗 <a href="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}">
               View Logs</a>
             </p>
