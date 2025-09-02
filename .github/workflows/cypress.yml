@@ -20,23 +20,34 @@ jobs:
       - name: Send result to Teams via SendGrid
         if: always()
         run: |
+          cat <<'EOF' > payload.json
+          {
+            "personalizations": [
+              {
+                "to": [
+                  {"email": "e578a964.bounteous.com@amer.teams.ms"}
+                ],
+                "subject": "Cypress Pipeline - ${{ job.status }}"
+              }
+            ],
+            "from": {
+              "email": "kishorekumar.gunasekar@bounteous.com"
+            },
+            "content": [
+              {
+                "type": "text/html",
+                "value": "<h2>🚀 Cypress Pipeline - ${{ job.status }}</h2>
+                          <p><b>Repository:</b> ${{ github.repository }}</p>
+                          <p><b>Workflow:</b> ${{ github.workflow }}</p>
+                          <p><b>Run Number:</b> ${{ github.run_number }}</p>
+                          <p><b>Status:</b> ${{ job.status }}</p>
+                          <p>🔗 <a href='https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}'>View Logs</a></p>"
+              }
+            ]
+          }
+          EOF
+
           curl -X POST "https://api.sendgrid.com/v3/mail/send" \
             -H "Authorization: Bearer ${{ secrets.SENDGRID_API_KEY }}" \
             -H "Content-Type: application/json" \
-            -d "{
-              \"personalizations\": [{
-                \"to\": [{\"email\": \"e578a964.bounteous.com@amer.teams.ms\"}],
-                \"subject\": \"Cypress Pipeline - ${{ job.status }}\"
-              }],
-              \"from\": {\"email\": \"kishorekumar.gunasekar@bounteous.com\"},
-              \"content\": [{
-                \"type\": \"text/html\",
-                \"value\": \"<h2>🚀 Cypress Pipeline - ${{ job.status }}</h2>
-                            <p><b>Repository:</b> ${{ github.repository }}</p>
-                            <p><b>Workflow:</b> ${{ github.workflow }}</p>
-                            <p><b>Run Number:</b> ${{ github.run_number }}</p>
-                            <p><b>Status:</b> ${{ job.status }}</p>
-                            <p>🔗 <a href='https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}'>
-                              View Logs</a></p>\"
-              }]
-            }"
+            -d @payload.json
