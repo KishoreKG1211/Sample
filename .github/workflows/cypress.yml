@@ -27,7 +27,7 @@ jobs:
           username: ${{ secrets.EMAIL_USERNAME }}
           password: ${{ secrets.EMAIL_PASSWORD }}
           subject: "Cypress Pipeline - ${{ job.status }}"
-          to: "YOUR_TEAMS_CHANNEL_EMAIL"
+          to: "Demo Channel - Business as Usual <e578a964.bounteous.com@amer.teams.ms>"
           from: "GitHub Actions <${{ secrets.EMAIL_USERNAME }}>"
           body: |
             Repository: ${{ github.repository }}
