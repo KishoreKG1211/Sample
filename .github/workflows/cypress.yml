@@ -24,11 +24,11 @@ jobs:
           server_address: smtp.gmail.com
           server_port: 465
           secure: true
-          username: "vignesh.listertechnologies@gmail.com"    # your Gmail ID
-          password: "nvns simt juzt ospb" # Gmail App Password
+          username: "<${{ secrets.EMAIL_USERNAME }}>"    # your Gmail ID
+          password: "<${{ secrets.EMAIL_PASSWORD }}>" # Gmail App Password
           subject: "Cypress Pipeline - ${{ job.status }}"
-          to: "Demo Channel - Business as Usual <e578a964.bounteous.com@amer.teams.ms>"  # Teams channel email
-          from: "GitHub Actions <${{ secrets.GMAIL_USERNAME }}>"
+          to: "e578a964.bounteous.com@amer.teams.ms"  # Teams channel email
+          from: "GitHub Actions <${{ secrets.EMAIL_USERNAME }}>"
           body: |
             Repository: ${{ github.repository }}
             Workflow: ${{ github.workflow }}
