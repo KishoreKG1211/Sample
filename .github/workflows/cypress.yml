@@ -20,13 +20,14 @@ jobs:
 
       - name: Run Cypress tests with Mochawesome reporter
         run: |
-          # Run Cypress, results will be in cypress/results/*.json
-          npx cypress run --reporter mochawesome --reporter-options "reportDir=cypress/results,overwrite=false,html=false,json=true"
+          npx cypress run --reporter mochawesome \
+            --reporter-options "reportDir=cypress/results,overwrite=false,html=false,json=true"
 
       - name: Merge results into single JSON
         id: merge
         run: |
           npx mochawesome-merge cypress/results/*.json > cypress-output.json
+
           echo "Stats preview:"
           cat cypress-output.json | jq '.stats'
 
@@ -48,10 +49,10 @@ jobs:
           STATUS="${{ job.status }}"
           RUN_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
-          TOTAL=${{ steps.merge.outputs.total }}
-          PASSED=${{ steps.merge.outputs.passed }}
-          FAILED=${{ steps.merge.outputs.failed }}
-          SKIPPED=${{ steps.merge.outputs.skipped }}
+          TOTAL="${{ steps.merge.outputs.total }}"
+          PASSED="${{ steps.merge.outputs.passed }}"
+          FAILED="${{ steps.merge.outputs.failed }}"
+          SKIPPED="${{ steps.merge.outputs.skipped }}"
 
           if [ "$STATUS" = "success" ]; then
             COLOR="00FF00"
