@@ -16,10 +16,12 @@ jobs:
         run: |
           npm ci
           npx cypress install
+          npm install --save-dev mochawesome mochawesome-merge mochawesome-report-generator
 
-      - name: Run Cypress tests with JSON reporter
+      - name: Run Cypress tests with Mochawesome reporter
         run: |
-          npx cypress run --reporter json --reporter-options output=results.json
+          npx cypress run --reporter mochawesome --reporter-options reportDir=results,overwrite=false,html=false,json=true
+          npx mochawesome-merge results/*.json > results.json
 
       - name: Send Webhook Notification
         if: always()
@@ -29,7 +31,6 @@ jobs:
           STATUS="${{ job.status }}"
           RUN_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
-          # extract test summary from Cypress JSON
           TOTAL=$(jq '.stats.tests' results.json)
           PASSED=$(jq '.stats.passes' results.json)
           FAILED=$(jq '.stats.failures' results.json)
