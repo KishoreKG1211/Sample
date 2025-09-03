@@ -18,67 +18,45 @@ jobs:
           npx cypress install
           npm install --save-dev mochawesome mochawesome-merge mochawesome-report-generator
 
-      - name: Run Cypress tests with Mochawesome reporter
+      - name: Run Cypress tests with Mochawesome
         run: |
-          npx cypress run --reporter mochawesome \
-            --reporter-options "reportDir=cypress/results,overwrite=false,html=false,json=true"
+          npx cypress run \
+            --reporter mochawesome \
+            --reporter-options reportDir=cypress/results,overwrite=false,html=false,json=true
 
-      - name: Merge results into single JSON
-        id: merge
+      - name: Merge Mochawesome reports
         run: |
-          npx mochawesome-merge cypress/results/*.json > cypress-output.json
+          npx mochawesome-merge cypress/results/*.json > cypress/results/mochawesome.json
+          cat cypress/results/mochawesome.json
 
-          echo "Stats preview:"
-          cat cypress-output.json | jq '.stats'
-
-          TOTAL=$(jq '.stats.tests' cypress-output.json)
-          PASSED=$(jq '.stats.passes' cypress-output.json)
-          FAILED=$(jq '.stats.failures' cypress-output.json)
-          SKIPPED=$(jq '.stats.pending' cypress-output.json)
-
-          echo "total=$TOTAL" >> $GITHUB_OUTPUT
-          echo "passed=$PASSED" >> $GITHUB_OUTPUT
-          echo "failed=$FAILED" >> $GITHUB_OUTPUT
-          echo "skipped=$SKIPPED" >> $GITHUB_OUTPUT
-
-      - name: Send Webhook Notification
+      - name: Send results to Teams
         if: always()
-        env:
-          WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
         run: |
-          STATUS="${{ job.status }}"
-          RUN_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          RESULTS=$(cat cypress/results/mochawesome.json)
+          TOTAL=$(echo $RESULTS | jq '.stats.tests')
+          PASSED=$(echo $RESULTS | jq '.stats.passes')
+          FAILED=$(echo $RESULTS | jq '.stats.failures')
+          SKIPPED=$(echo $RESULTS | jq '.stats.skipped')
 
-          TOTAL="${{ steps.merge.outputs.total }}"
-          PASSED="${{ steps.merge.outputs.passed }}"
-          FAILED="${{ steps.merge.outputs.failed }}"
-          SKIPPED="${{ steps.merge.outputs.skipped }}"
-
-          if [ "$STATUS" = "success" ]; then
-            COLOR="00FF00"
-            MESSAGE="✅ Build passed"
-          else
-            COLOR="FF0000"
-            MESSAGE="❌ Build failed"
+          STATUS="success"
+          if [ "$FAILED" -gt 0 ]; then
+            STATUS="failure"
           fi
 
-          cat <<EOF > payload.json
-          {
-            "@type": "MessageCard",
-            "@context": "https://schema.org/extensions",
-            "summary": "Cypress Pipeline",
-            "themeColor": "$COLOR",
-            "title": "GitHub Actions - Cypress Pipeline",
-            "text": "$MESSAGE<br>
-                     Repository: ${{ github.repository }}<br>
-                     Total: $TOTAL<br>
-                     Passed: $PASSED<br>
-                     Failed: $FAILED<br>
-                     Skipped: $SKIPPED<br>
-                     Run: <a href='$RUN_URL'>View Logs</a>"
-          }
-          EOF
+          THEME_COLOR="00FF00"
+          if [ "$STATUS" = "failure" ]; then
+            THEME_COLOR="FF0000"
+          fi
 
-          curl -H "Content-Type: application/json" \
-               -d @payload.json \
-               "$WEBHOOK_URL"
+          RUN_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+          curl -H 'Content-Type: application/json' \
+            -d "{
+              \"@type\": \"MessageCard\",
+              \"@context\": \"https://schema.org/extensions\",
+              \"summary\": \"Cypress Pipeline Results\",
+              \"themeColor\": \"${THEME_COLOR}\",
+              \"title\": \"Cypress Tests - ${STATUS}\",
+              \"text\": \"📊 Total: ${TOTAL}<br>✅ Passed: ${PASSED}<br>❌ Failed: ${FAILED}<br>⚠️ Skipped: ${SKIPPED}<br><br>🔗 <a href='${RUN_URL}'>View Logs</a>\"
+            }" \
+            ${{ secrets.TEAMS_WEBHOOK_URL }}
