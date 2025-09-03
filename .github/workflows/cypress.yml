@@ -18,9 +18,8 @@ jobs:
           npx cypress install
 
       - name: Run Cypress tests
-        run: |
-          npx cypress run
-        continue-on-error: true   # don't stop workflow if tests fail
+        run: npx cypress run
+        continue-on-error: true   # run webhook step even if tests fail
 
       - name: Send Webhook Notification
         if: always()
@@ -28,15 +27,27 @@ jobs:
           STATUS="${{ job.status }}"
           RUN_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
+          if [ "$STATUS" = "success" ]; then
+            COLOR="00FF00"
+            MESSAGE="✅ Build passed"
+          else
+            COLOR="FF0000"
+            MESSAGE="❌ Build failed"
+          fi
+
+          cat <<EOF > payload.json
+          {
+            "@type": "MessageCard",
+            "@context": "https://schema.org/extensions",
+            "summary": "Cypress Pipeline",
+            "themeColor": "$COLOR",
+            "title": "GitHub Actions - Cypress Pipeline",
+            "text": "$MESSAGE<br>
+                     Repository: ${{ github.repository }}<br>
+                     Run: <a href='$RUN_URL'>View Logs</a>"
+          }
+          EOF
+
           curl -H "Content-Type: application/json" \
-               -d "{
-                 \"@type\": \"MessageCard\",
-                 \"@context\": \"https://schema.org/extensions\",
-                 \"summary\": \"Cypress Pipeline\",
-                 \"themeColor\": \"${STATUS == 'success' && '00FF00' || 'FF0000'}\",
-                 \"title\": \"GitHub Actions - Cypress Pipeline\",
-                 \"text\": \"${STATUS == 'success' && '✅ Build passed' || '❌ Build failed'}<br>
-                            Repository: ${{ github.repository }}<br>
-                            Run: <a href='${RUN_URL}'>View Logs</a>\"
-               }" \
+               -d @payload.json \
                "$WEBHOOK_URL"
