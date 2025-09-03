@@ -16,18 +16,20 @@ jobs:
         run: |
           npm ci
           npx cypress install
+          npm install --save-dev mochawesome mochawesome-merge mochawesome-report-generator
 
-      - name: Run Cypress tests and capture results
-        id: cypress
+      - name: Run Cypress tests with Mochawesome reporter
         run: |
-          set -o pipefail
-          # Run Cypress with JSON reporter
-          npx cypress run --reporter json > cypress-output.json
+          # Run Cypress, results will be in cypress/results/*.json
+          npx cypress run --reporter mochawesome --reporter-options "reportDir=cypress/results,overwrite=false,html=false,json=true"
 
-          echo "Cypress Stats:"
+      - name: Merge results into single JSON
+        id: merge
+        run: |
+          npx mochawesome-merge cypress/results/*.json > cypress-output.json
+          echo "Stats preview:"
           cat cypress-output.json | jq '.stats'
 
-          # Extract stats
           TOTAL=$(jq '.stats.tests' cypress-output.json)
           PASSED=$(jq '.stats.passes' cypress-output.json)
           FAILED=$(jq '.stats.failures' cypress-output.json)
@@ -46,10 +48,10 @@ jobs:
           STATUS="${{ job.status }}"
           RUN_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
-          TOTAL=${{ steps.cypress.outputs.total }}
-          PASSED=${{ steps.cypress.outputs.passed }}
-          FAILED=${{ steps.cypress.outputs.failed }}
-          SKIPPED=${{ steps.cypress.outputs.skipped }}
+          TOTAL=${{ steps.merge.outputs.total }}
+          PASSED=${{ steps.merge.outputs.passed }}
+          FAILED=${{ steps.merge.outputs.failed }}
+          SKIPPED=${{ steps.merge.outputs.skipped }}
 
           if [ "$STATUS" = "success" ]; then
             COLOR="00FF00"
