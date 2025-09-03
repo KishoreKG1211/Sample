@@ -23,6 +23,8 @@ jobs:
 
       - name: Send Webhook Notification
         if: always()
+        env:
+          WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
         run: |
           STATUS="${{ job.status }}"
           RUN_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
