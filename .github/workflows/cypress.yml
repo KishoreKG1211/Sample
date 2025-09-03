@@ -21,12 +21,13 @@ jobs:
         id: cypress
         run: |
           set -o pipefail
-          # Run Cypress with JSON reporter and capture output
-          CYPRESS_OUTPUT=$(npx cypress run --reporter json)
-          
-          echo "$CYPRESS_OUTPUT" > cypress-output.json
+          # Run Cypress with JSON reporter
+          npx cypress run --reporter json > cypress-output.json
 
-          # Extract stats directly
+          echo "Cypress Stats:"
+          cat cypress-output.json | jq '.stats'
+
+          # Extract stats
           TOTAL=$(jq '.stats.tests' cypress-output.json)
           PASSED=$(jq '.stats.passes' cypress-output.json)
           FAILED=$(jq '.stats.failures' cypress-output.json)
